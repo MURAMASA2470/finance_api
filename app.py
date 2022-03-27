@@ -1,5 +1,6 @@
 import sys
 import re
+import pandas
 from urllib import request
 from lxml import html
 from flask import Flask, jsonify, abort, make_response
@@ -10,6 +11,21 @@ app.config['JSON_AS_ASCII'] = False
 @app.route('/', methods=['GET', 'POST'])
 def index():
     abort(403)
+
+@app.route('/api/companyList', methods=['GET'])
+def get_company_list():
+
+    xls_data = pandas.read_excel("https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls", usecols=[1, 2, 3])
+    result = []
+    for row in xls_data.itertuples():
+        result.append({
+            'index'         : row[0],
+            'company_code'  : row[1],
+            'company_name'  : row[2],
+            'market_dv'     : row[3]
+        })
+    return make_response(jsonify(result))
+
 
 @app.route('/api/companyInfo/<string:code>', methods=['GET'])
 def get_company_info(code):
