@@ -7,11 +7,15 @@ from flask import Flask, jsonify, abort, make_response
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
-@app.route('/api/<string:code>', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    abort(403)
+
+@app.route('/api/companyInfo/<string:code>', methods=['GET'])
 def get_company_info(code):
 
     # 証券コード以外は400エラー
-    if not re.match(r'^\d{4}$', code): abort(400)
+    if not re.match(r'^(\d{4},?)+$', code): abort(400)
 
     param = code.split(',')
     result = []
@@ -38,6 +42,10 @@ def get_company_info(code):
 @app.errorhandler(400)
 def bad_request(error):
     return make_response(jsonify({'error': 'Bad Request'}), 400)
+
+@app.errorhandler(403)
+def forbidden(error):
+    return make_response(jsonify({'error': 'Forbidden'}), 403)
 
 @app.errorhandler(404)
 def not_found(error):
